@@ -1,71 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to Our Site</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            color: #fff;
-        }
-
-        .container {
-            text-align: center;
-            max-width: 500px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        p {
-            font-size: 1rem;
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 1rem;
-            text-decoration: none;
-            color: #fff;
-            background: #2575fc;
-            border-radius: 25px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            background: #6a11cb;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Repo Explorer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background: #333;
+      color: #fff;
+      padding: 1rem 0;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+    }
+    .container {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    .file-list {
+      list-style: none;
+      padding: 0;
+    }
+    .file-list li {
+      background: #fff;
+      margin: 0.5rem 0;
+      padding: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    .file-list a {
+      text-decoration: none;
+      color: #0073e6;
+      font-weight: bold;
+    }
+    .file-list a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Welcome to Our Site</h1>
-        <p>
-            We're delighted to have you here! Explore our features, learn more about us, 
-            and let us know how we can make your experience even better.
-        </p>
-        <a href="https://mobarokop.github.io" class="btn">Contact Me</a>
-    </div>
+  <header>
+    <h1>📂 GitHub Repo Explorer</h1>
+    <p>Explore all files in this repository</p>
+  </header>
+  <div class="container">
+    <ul class="file-list" id="file-list">
+      <li>Loading files...</li>
+    </ul>
+  </div>
+  <script>
+    const repoOwner = "mobarokOP"; // Replace with your GitHub username
+    const repoName = "mp3_quran_api"; // Replace with your repository name
+
+    async function fetchRepoFiles() {
+      const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
+      const fileList = document.getElementById('file-list');
+      fileList.innerHTML = '';
+
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error('Failed to fetch files. Please check the repository name and permissions.');
+        }
+        const files = await response.json();
+        files.forEach(file => {
+          const li = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = file.html_url;
+          link.target = '_blank';
+          link.textContent = file.name;
+          li.appendChild(link);
+          fileList.appendChild(li);
+        });
+      } catch (error) {
+        fileList.innerHTML = `<li>Error: ${error.message}</li>`;
+      }
+    }
+
+    fetchRepoFiles();
+  </script>
 </body>
 </html>
