@@ -37,14 +37,32 @@
       padding: 1rem;
       border-radius: 5px;
       border: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .file-list a {
       text-decoration: none;
       color: #0073e6;
       font-weight: bold;
     }
-    .file-list a:hover {
-      text-decoration: underline;
+    .file-list button {
+      margin-left: 10px;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .copy-btn {
+      background-color: #0073e6;
+      color: white;
+    }
+    .open-btn {
+      background-color: #28a745;
+      color: white;
+    }
+    .copy-btn:hover, .open-btn:hover {
+      opacity: 0.9;
     }
   </style>
 </head>
@@ -61,9 +79,10 @@
   <script>
     const repoOwner = "mobarokOP"; // Replace with your GitHub username
     const repoName = "mp3_quran_api"; // Replace with your repository name
+    const apiBase = `https://api.github.com/repos/${repoOwner}/${repoName}/contents`;
 
-    async function fetchRepoFiles() {
-      const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
+    async function fetchRepoFiles(path = '') {
+      const apiUrl = `${apiBase}/${path}`;
       const fileList = document.getElementById('file-list');
       fileList.innerHTML = '';
 
@@ -75,11 +94,41 @@
         const files = await response.json();
         files.forEach(file => {
           const li = document.createElement('li');
-          const link = document.createElement('a');
-          link.href = file.html_url;
-          link.target = '_blank';
-          link.textContent = file.name;
-          li.appendChild(link);
+          if (file.type === 'dir') {
+            const folderLink = document.createElement('a');
+            folderLink.href = '#';
+            folderLink.textContent = `📁 ${file.name}`;
+            folderLink.onclick = (e) => {
+              e.preventDefault();
+              fetchRepoFiles(file.path);
+            };
+            li.appendChild(folderLink);
+          } else {
+            const fileLink = document.createElement('a');
+            fileLink.href = file.html_url;
+            fileLink.target = '_blank';
+            fileLink.textContent = `📄 ${file.name}`;
+
+            const copyButton = document.createElement('button');
+            copyButton.textContent = 'Copy Link';
+            copyButton.className = 'copy-btn';
+            copyButton.onclick = () => {
+              navigator.clipboard.writeText(file.download_url).then(() => {
+                alert('Link copied to clipboard!');
+              });
+            };
+
+            const openButton = document.createElement('button');
+            openButton.textContent = 'Open in New Tab';
+            openButton.className = 'open-btn';
+            openButton.onclick = () => {
+              window.open(file.download_url, '_blank');
+            };
+
+            li.appendChild(fileLink);
+            li.appendChild(copyButton);
+            li.appendChild(openButton);
+          }
           fileList.appendChild(li);
         });
       } catch (error) {
