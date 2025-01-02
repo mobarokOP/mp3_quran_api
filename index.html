@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Repo Explorer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background: #333;
+      color: #fff;
+      padding: 1rem 0;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+    }
+    .container {
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    .file-list {
+      list-style: none;
+      padding: 0;
+    }
+    .file-list li {
+      background: #fff;
+      margin: 0.5rem 0;
+      padding: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .file-list a {
+      text-decoration: none;
+      color: #0073e6;
+      font-weight: bold;
+    }
+    .file-list button {
+      margin-left: 10px;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .copy-btn {
+      background-color: #0073e6;
+      color: white;
+    }
+    .open-btn {
+      background-color: #28a745;
+      color: white;
+    }
+    .copy-btn:hover, .open-btn:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📂 GitHub Repo Explorer</h1>
+    <p>Explore all files in this repository</p>
+  </header>
+  <div class="container">
+    <ul class="file-list" id="file-list">
+      <li>Loading files...</li>
+    </ul>
+  </div>
+  <script>
+    const repoOwner = "mobarokOP"; // Replace with your GitHub username
+    const repoName = "mp3_quran_api"; // Replace with your repository name
+    const apiBase = `https://api.github.com/repos/${repoOwner}/${repoName}/contents`;
+
+    async function fetchRepoFiles(path = '') {
+      const apiUrl = `${apiBase}/${path}`;
+      const fileList = document.getElementById('file-list');
+      fileList.innerHTML = '';
+
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error('Failed to fetch files. Please check the repository name and permissions.');
+        }
+        const files = await response.json();
+        files.forEach(file => {
+          const li = document.createElement('li');
+          if (file.type === 'dir') {
+            const folderLink = document.createElement('a');
+            folderLink.href = '#';
+            folderLink.textContent = `📁 ${file.name}`;
+            folderLink.onclick = (e) => {
+              e.preventDefault();
+              fetchRepoFiles(file.path);
+            };
+            li.appendChild(folderLink);
+          } else {
+            const fileLink = document.createElement('a');
+            fileLink.href = file.html_url;
+            fileLink.target = '_blank';
+            fileLink.textContent = `📄 ${file.name}`;
+
+            const copyButton = document.createElement('button');
+            copyButton.textContent = 'Copy Link';
+            copyButton.className = 'copy-btn';
+            copyButton.onclick = () => {
+              navigator.clipboard.writeText(file.download_url).then(() => {
+                alert('Link copied to clipboard!');
+              });
+            };
+
+            const openButton = document.createElement('button');
+            openButton.textContent = 'Open in New Tab';
+            openButton.className = 'open-btn';
+            openButton.onclick = () => {
+              window.open(file.download_url, '_blank');
+            };
+
+            li.appendChild(fileLink);
+            li.appendChild(copyButton);
+            li.appendChild(openButton);
+          }
+          fileList.appendChild(li);
+        });
+      } catch (error) {
+        fileList.innerHTML = `<li>Error: ${error.message}</li>`;
+      }
+    }
+
+    fetchRepoFiles();
+  </script>
+</body>
+</html>
